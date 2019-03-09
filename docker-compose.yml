@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+    ### Nginx Server Container ##################################
+    nginx:
+        build:
+            context: ./nginx
+        volumes:
+            - /mnt/hgfs/workspace:/var/www/html
+            - ./logs/nginx/:/var/log/nginx
+            - ./nginx/sites/:/etc/nginx/sites-available
+        ports:
+            - "8090:8090"
+            - "8089:8089"
+        links:
+            - php-fpm
+    php-fpm:
+        build:
+            context: ./php-fpm
+        volumes:
+            - /mnt/hgfs/workspace:/var/www/html
+        expose:
+            - "9000"
+        links:
+            - redis
+        extra_hosts:
+            # IMPORTANT: Replace with your Docker Host IP (will be appended to /etc/hosts)
+            - "dockerhost:172.18.0.1"
+        tty: true
+### Redis Container #########################################
+    redis:
+        build: ./redis
+        volumes:
+            - redis:/data
+        ports:
+           - "6378:6379"
+### MySQL Container #########################################
+    mysql:
+        build:
+            context: ./mysql
+            args:
+                - MYSQL_DATABASE=homesteadxx
+                - MYSQL_USER=homesteadxx
+                - MYSQL_PASSWORD=682sHF68S
+                - MYSQL_ROOT_PASSWORD=682sHF68S
+        volumes:
+            - mysql:/var/lib/mysql
+        ports:
+            - "3306:3306"
+### mongodb Container #########################################
+    mongodb:
+        build: ./mongodb
+        volumes:
+            - mongodb:/data
+        ports:
+            - "27017:27017"
+### elasticsearch Container #########################################
+    elasticsearch:
+        build: ./elasticsearch
+        volumes:
+            - elasticsearch:/data
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+
+### Volumes Setup ###########################################
+#
+volumes:
+    redis:
+        driver: "local"
+    mongodb:
+        driver: "local"
+    mysql:
+        driver: "local"
+    elasticsearch:
+            driver: "local"
+
